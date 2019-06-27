@@ -1,4 +1,4 @@
-# Platform: linux
+# Platform: linux/MacOS
 
 EXENAME  = SelfConsistent
 ### ------ Personal PC compilation ------------
