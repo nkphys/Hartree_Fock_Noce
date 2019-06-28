@@ -75,6 +75,7 @@ public:
     Mat_1_doub Local_Lz_, Local_Lx_, Local_Ly_;
     Mat_1_doub Local_n_orb_resolved;
 
+    Mat_1_Complex_doub Sq, Lq;
     Mat_2_Complex_doub SP_Density_Matrix;
 
 
@@ -953,7 +954,7 @@ void Observables::Calculate_Order_Params(){
                 c2=Coordinates_.Nc_dof(site,orb+n_orbs_*1); //down
                 Local_Sz_[site] += (
                             ( 0.5*( conj(Hamiltonian_.Ham_(c1,n))*Hamiltonian_.Ham_(c1,n)
-                                    - conj(Hamiltonian_.Ham_(c2,n))*Hamiltonian_.Ham_(c2,n)) )*
+                                    - conj(Hamiltonian_.Ham_(c2,n))*Hamiltonian_.Ham_(c2,n) ) )*
                             (1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0))
                             ).real();
             }
@@ -1393,6 +1394,13 @@ void Observables::Calculate_Single_Particle_Density_Matrix(){
 void Observables::Calculate_two_point_correlations(){
 
 
+    double PI_ = Parameters_.pi;
+    Sq.clear();Lq.clear();
+    Sq.resize(ns_);Lq.resize(ns_);
+    int qx_,qy_;
+    int ix,iy,jx,jy;
+
+
     int UP_, DOWN_;
     UP_=0;DOWN_=1;
 
@@ -1481,6 +1489,12 @@ void Observables::Calculate_two_point_correlations(){
 
 
 
+    string Structure_factors_out = "Structure_factors.txt";
+    ofstream file_Structure_factors_out(Structure_factors_out.c_str());
+    file_Structure_factors_out<<"#q_index   q_x    q_y   S(q).real     L(q).real    S(q).imag    L(q).imag"<<endl;
+
+
+
     string corrs_out = "corrs.txt";
     ofstream file_corrs_out(corrs_out.c_str());
     file_corrs_out<<"#site_i   site_i(x)    site_i(y)    site_j   site_j(x)    site_j(y)     SS[site_i][site_j]     LL[site_i][site_j]"<<endl;
@@ -1489,7 +1503,12 @@ void Observables::Calculate_two_point_correlations(){
 
     complex<double> temp_val_SS, temp_val_LL;
     for(int i=0;i<ns_;i++){
+        ix=Coordinates_.indx(i);
+        iy=Coordinates_.indy(i);
         for(int j=0;j<ns_;j++){
+            jx=Coordinates_.indx(j);
+            jy=Coordinates_.indy(j);
+
             temp_val_SS = zero_complex;
             temp_val_LL = zero_complex;
 
@@ -1537,8 +1556,32 @@ void Observables::Calculate_two_point_correlations(){
                             setw(15)<<temp_val_LL.real()<<//"\t"<<temp_val_LL.imag()<<
                             endl;
 
+
+            for(int q_=0;q_<ns_;q_++){
+                qx_=Coordinates_.indx(q_);
+                qy_=Coordinates_.indy(q_);
+                Sq[q_] += exp(iota_complex*(  ((2.0*qx_*PI_*(jx-ix))/(lx_))  +  ((2.0*qy_*PI_*(jy-iy))/(ly_))  ))*
+                           (temp_val_SS);
+
+                Lq[q_] += exp(iota_complex*(  ((2.0*qx_*PI_*(jx-ix))/(lx_))  +  ((2.0*qy_*PI_*(jy-iy))/(ly_))  ))*
+                           (temp_val_LL);
+
+            }
+
         }
     }
+
+    int q;
+    for(int qy=0;qy<ly_;qy++){
+        for(int qx=0;qx<lx_;qx++){
+          q=Coordinates_.Nc(qx,qy);
+    file_Structure_factors_out<<q<<"    "<<qx<<"     "<<qy<<"      "<<(Sq[q]*(1.0/(ns_*ns_))).real()<<"     "<<(Lq[q]*(1.0/(ns_*ns_))).real()<<"     "
+                             <<(Sq[q]*(1.0/(ns_*ns_))).imag()<<"     "<<(Lq[q]*(1.0/(ns_*ns_))).imag()<<endl;
+    }
+     file_Structure_factors_out<<endl;
+    }
+
+
 
 
 

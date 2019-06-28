@@ -95,12 +95,25 @@ void MFParams::initialize(){
 
     if(!Parameters_.Read_OPs){
         for(int site=0;site<ns_;site++){
+
+
             Local_Sz[site] = random1();
             Local_Sx[site] = random1();
             Local_Sy[site] = random1();
             Local_Lz[site] = random1();
             Local_Lx[site] = random1();
             Local_Ly[site] = random1();
+
+
+            /*
+            Local_Sz[site] = random1();//0.5;
+            Local_Sx[site] = 0.0;//0.5;
+            Local_Sy[site] = 0.0;//0.5;
+            Local_Lz[site] = random1();//0.5*pow(-1.0,Coordinates_.indx(site) + Coordinates_.indy(site) );
+            Local_Lx[site] = 0.0;//0.5*pow(-1.0,Coordinates_.indx(site) + Coordinates_.indy(site) );
+            Local_Ly[site] = 0.0;//0.5*pow(-1.0,Coordinates_.indx(site) + Coordinates_.indy(site) );
+            */
+
         }
         Initial_OrderParams_file<<"#seed="<<Parameters_.RandomSeed<<
                                   " for mt19937_64 Generator is used"<<endl;
@@ -150,7 +163,7 @@ void MFParams::initialize(){
             site_i=Coordinates_.Nc(ix,iy);
             Initial_OrderParams_file<<site_i<<setw(15)<<ix<<setw(15)<<iy<<setw(15)<<
                                       Local_Sz[site_i]<<setw(15)<<Local_Sx[site_i]<<setw(15)<<Local_Sy[site_i]<<setw(15)
-                                   <<Local_Lz[site_i]<<setw(15)<<Local_Lx[site_i]<<setw(15)<<Local_Ly[site_i]<<setw(15)
+                                   <<Local_Lz[site_i]<<setw(15)<<Local_Lx[site_i]<<setw(15)<<Local_Ly[site_i]
                                   <<endl;
         }
         Initial_OrderParams_file<<endl;
