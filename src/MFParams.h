@@ -124,9 +124,9 @@ void MFParams::initialize(){
             ifstream file_initial_OP_in(fl_initial_OP_in.c_str());
             string temp1;//,temp2,temp3,temp4,temp5,temp6,temp7;
             int site_temp, x,y;
-            double val_Sz, val_Sx, val_Sy, val_Lz, val_Lx, val_Ly;
+            double val_Sz, val_Sx, val_Sy, val_Lz, val_Lx, val_Ly , val_n;
 
-            for(int i=0;i<9;i++){
+            for(int i=0;i<10;i++){
                 file_initial_OP_in>>temp1;
                 cout<<temp1<<"   ";
             }
