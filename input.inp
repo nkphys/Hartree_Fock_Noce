@@ -7,7 +7,7 @@ TwistedBoundaryCond_my=0
 TBC_cellsX=32
 TBC_cellsY=32
 Total No. of particles=192
-RandomSeed=26
+RandomSeed=20
 Nearest_Neigh_Hopping_matrix=1.0 0.0 0.0 1.0 
 
 Crystal_Field=0.0 0.0
@@ -30,7 +30,7 @@ U_Onsite=20.0
 U_prime_Onsite=14.0
 
 No_of_SelfConsistency_iters=200000
-Convergence_Error=0.0001
-Read_initial_OPvalues=1
-Read_initial_OPvalues_file=OrderParams_IN.txt
+Convergence_Error=0.00001
+Read_initial_OPvalues=0
+Read_initial_OPvalues_file=Order_FM.txt
 Write_Final_OPvalues_file=OrderParams_OUT.txt

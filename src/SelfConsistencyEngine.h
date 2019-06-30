@@ -45,6 +45,8 @@ void SelfConsistencyEngine::RUN_SelfConsistencyEngine(){
 
     double Curr_QuantE;
     double Curr_ClassicalE;
+    double Old_QuantE;
+    double Old_ClassicalE;
 
     cout << "Temperature = " << Parameters_.Temperature<<" is being done"<<endl;
 
@@ -111,7 +113,7 @@ void SelfConsistencyEngine::RUN_SelfConsistencyEngine(){
             n_states_occupied_zeroT=Parameters_.Total_Particles;
             initial_mu_guess=0.5*(Hamiltonian_.eigs_[n_states_occupied_zeroT-1] + Hamiltonian_.eigs_[n_states_occupied_zeroT]);
             Parameters_.mus=Hamiltonian_.chemicalpotential(initial_mu_guess,Parameters_.Total_Particles);
-            Parameters_.mu_old=Parameters_.mus;
+
 
             //Getting order params using mu for N particles
             Observables_.Calculate_Order_Params();
@@ -120,11 +122,12 @@ void SelfConsistencyEngine::RUN_SelfConsistencyEngine(){
             Curr_QuantE = Hamiltonian_.E_QM();
             Curr_ClassicalE = Hamiltonian_.GetCLEnergy();
 
-
             Observables_.Get_OrderParameters_diffs();
 
-            Error_OP=Observables_.Error_OP_;
-
+            Error_OP = pow(Observables_.Error_OP_,2.0) + 1.0*(pow(abs(Curr_QuantE-Old_QuantE),2.0)
+                      + pow(abs(Curr_ClassicalE-Old_ClassicalE),2.0) +
+                       pow(abs(Parameters_.mus-Parameters_.mu_old),2.0));
+            Error_OP = sqrt(Error_OP);
 
 
             file_out_progress<<setprecision(15)<<count<<setw(30)<<
@@ -141,6 +144,9 @@ void SelfConsistencyEngine::RUN_SelfConsistencyEngine(){
             }
 
 
+            Old_QuantE=Curr_QuantE;
+            Old_ClassicalE=Curr_ClassicalE;
+            Parameters_.mu_old=Parameters_.mus;
         }
 
     }
