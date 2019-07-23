@@ -353,8 +353,6 @@ void Hamiltonian::Check_Hermiticity()
 
 
 
-
-
 void Hamiltonian::Diagonalize(char option){
 
     //extern "C" void   zheev_(char *,char *,int *,std::complex<double> *, int *, double *,
@@ -489,7 +487,7 @@ orb0_up(site=0),orb1_up(site=0),orb2_up(site=0), orb0_dn(site=0), orb1_dn(site=0
         for(int spin_=0;spin_<2;spin_++){
             for(int orb=0;orb<n_orbs_;orb++) {
                 a=Coordinates_.Nc_dof(i,orb + n_orbs_*spin_);
-                HTB_(a,a)+=(Parameters_.Crystal_Field[orb]);
+                HTB_(a,a)+=(Parameters_.Crystal_Field[orb]) + MFParams_.Disorder(Coordinates_.indx(i),Coordinates_.indy(i));
             }
         }
     }
