@@ -90,7 +90,9 @@ int main(int argc, char *argv[]) {
         Observables_.Calculate_two_point_correlations();
 
         // Observables_.Calculate_Akw();
-        //Observables_.Calculate_Optical_Conductivity();
+        Observables_.Calculate_IPR();
+        Observables_.Calculate_Optical_Conductivity();
+
 
 
     }

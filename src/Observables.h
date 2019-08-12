@@ -767,49 +767,58 @@ void Observables::Update_OrderParameters_Modified_Broyden_in_ComplexSpace(int it
 
 
 void Observables::Calculate_IPR(){
-    /*
-    double IPR;
-    int c1, site;
+
+
+    double IPR_0, IPR_1;
+    int c0, c1, site;
     double eta = 0.001;
-    int n_chosen=(Parameters_.ns*Parameters_.Fill*2.0) - 1;
-    IPR=0.0;
+    int n_chosen=(Parameters_.Total_Particles) - 1;
+    IPR_0=0.0; IPR_1=0.0;
+
     for(int i=0;i<lx_;i++){
         for(int j=0;j<ly_;j++){
             site=Coordinates_.Nc(i,j);
 
             for(int spin=0;spin<2;spin++){
-                c1=site + spin*ns_;
+                c0=Coordinates_.Nc_dof(site, 0 + n_orbs_*spin);
+                c1=Coordinates_.Nc_dof(site, 1 + n_orbs_*spin);
                 //  IPR += abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
                 //         abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
                 //         Lorentzian( Parameters_.mus - Hamiltonian_.eigs_[n], eta);
 
-                IPR += abs(Hamiltonian_.Ham_(c1,n_chosen))*abs(Hamiltonian_.Ham_(c1,n_chosen))*
+                IPR_1 += abs(Hamiltonian_.Ham_(c1,n_chosen))*abs(Hamiltonian_.Ham_(c1,n_chosen))*
                         abs(Hamiltonian_.Ham_(c1,n_chosen))*abs(Hamiltonian_.Ham_(c1,n_chosen));
-
-
+                IPR_0 += abs(Hamiltonian_.Ham_(c0,n_chosen))*abs(Hamiltonian_.Ham_(c0,n_chosen))*
+                        abs(Hamiltonian_.Ham_(c0,n_chosen))*abs(Hamiltonian_.Ham_(c0,n_chosen));
 
 
             }
         }
     }
 
-    cout<<"IPR for state no. "<<n_chosen<<" = "<<IPR<<endl;
+    cout<<"IPR for state no. "<<n_chosen<<" = "<<IPR_0<<",   "<< IPR_1<<",   "<<IPR_0+IPR_1<<endl;
 
 
 
-    IPR=0.0;
+    IPR_0=0.0;IPR_1=0.0;
     for(int i=0;i<lx_;i++){
         for(int j=0;j<ly_;j++){
             site=Coordinates_.Nc(i,j);
 
             for(int spin=0;spin<2;spin++){
-                c1=site + spin*ns_;
+
+                c0=Coordinates_.Nc_dof(site, 0 + n_orbs_*spin);
+                c1=Coordinates_.Nc_dof(site, 1 + n_orbs_*spin);
 
                 for(int n=0;n<Hamiltonian_.Ham_.n_row();n++){
 
 
-                    IPR += abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
+                    IPR_1 += abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
                             abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
+                            Lorentzian( Parameters_.mus - Hamiltonian_.eigs_[n], eta);
+
+                    IPR_0 += abs(Hamiltonian_.Ham_(c0,n))*abs(Hamiltonian_.Ham_(c0,n))*
+                            abs(Hamiltonian_.Ham_(c0,n))*abs(Hamiltonian_.Ham_(c0,n))*
                             Lorentzian( Parameters_.mus - Hamiltonian_.eigs_[n], eta);
 
                 }
@@ -817,7 +826,7 @@ void Observables::Calculate_IPR(){
         }
     }
 
-    cout<<"IPR for near mu(with eta = "<<eta<<") = "<<IPR<<endl;
+    cout<<"IPR for near mu(with eta = "<<eta<<") = "<<IPR_0<<",   "<<  IPR_1<<",   "<<IPR_0+IPR_1<<endl;
 
 
 
@@ -833,9 +842,11 @@ void Observables::Calculate_IPR(){
             value = 0.0;
 
             for(int spin=0;spin<2;spin++){
-                c1=site + spin*ns_;
+                c0=Coordinates_.Nc_dof(site, 0 + n_orbs_*spin);
+                c1=Coordinates_.Nc_dof(site, 1 + n_orbs_*spin);
 
-                value += abs(Hamiltonian_.Ham_(c1,n_chosen))*abs(Hamiltonian_.Ham_(c1,n_chosen));
+                value += (abs(Hamiltonian_.Ham_(c1,n_chosen))*abs(Hamiltonian_.Ham_(c1,n_chosen))) +
+                        (abs(Hamiltonian_.Ham_(c0,n_chosen))*abs(Hamiltonian_.Ham_(c0,n_chosen)));
             }
 
             file_FermiState_out<<i<<"\t"<<j<<"\t"<<site<<"\t"<<value<<endl;
@@ -859,9 +870,13 @@ void Observables::Calculate_IPR(){
             value = 0.0;
 
             for(int spin=0;spin<2;spin++){
-                c1=site + spin*ns_;
+                c0=Coordinates_.Nc_dof(site, 0 + n_orbs_*spin);
+                c1=Coordinates_.Nc_dof(site, 1 + n_orbs_*spin);
+
                 for(int n=0;n<Hamiltonian_.Ham_.n_row();n++){
-                    value += abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
+                    value += ( (abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n)))
+                              +
+                              (abs(Hamiltonian_.Ham_(c0,n))*abs(Hamiltonian_.Ham_(c0,n))))*
                             Lorentzian(Parameters_.mus - Hamiltonian_.eigs_[n], eta);;
                 }
             }
@@ -874,7 +889,7 @@ void Observables::Calculate_IPR(){
 
 
 
-*/
+
 }
 
 
@@ -1259,71 +1274,87 @@ void Observables::Calculate_Nw(){
 }
 
 void Observables::Calculate_Optical_Conductivity(){
-    /*
+
 
     string fileout_sigma_w = "Optical_conductivity.txt";
     ofstream file_sigma_w_out(fileout_sigma_w.c_str());
-    file_sigma_w_out<<"#omega   Sigma_xx  Sigma_yy"<<endl;
+    file_sigma_w_out<<"#omega   Sigma_xx(orb=0)  Sigma_yy(orb=0)  Sigma_xx(orb=1)  Sigma_yy(orb=1)  Sigma_avg"<<endl;
 
     //--------------------------------------------------//
     double omega_min, omega_max, d_omega;
     double eta = 0.05;
-    omega_min=0.00001;omega_max=10.0;d_omega=0.001;
+    omega_min=0.00001;omega_max=Hamiltonian_.eigs_[2*n_orbs_*ns_ - 1] - Hamiltonian_.eigs_[0] + 1.0;d_omega=0.01;
     //---------------------------------------------------//
 
 
-    Mat_2_doub PSI_x, PSI_y;
-    complex<double> value_x, value_y;
+    Mat_2_doub PSI0_x, PSI0_y, PSI1_x, PSI1_y;
+    complex<double> value0_x, value0_y, value1_x, value1_y;
     int ipx, ipy;
+    int cpx_0, cpx_1,cpy_0,cpy_1, c_0, c_1;
 
 
-
-
-    PSI_x.resize(2*ns_);
-    PSI_y.resize(2*ns_);
-    for(int n=0;n<2*ns_;n++){
-        PSI_x[n].resize(2*ns_);
-        PSI_y[n].resize(2*ns_);
+    PSI0_x.resize(2*ns_*n_orbs_);
+    PSI0_y.resize(2*ns_*n_orbs_);
+    PSI1_x.resize(2*ns_*n_orbs_);
+    PSI1_y.resize(2*ns_*n_orbs_);
+    for(int n=0;n<2*ns_*n_orbs_;n++){
+        PSI0_x[n].resize(2*ns_*n_orbs_);
+        PSI0_y[n].resize(2*ns_*n_orbs_);
+        PSI1_x[n].resize(2*ns_*n_orbs_);
+        PSI1_y[n].resize(2*ns_*n_orbs_);
     }
 
 
+    for(int n=0;n<2*ns_*n_orbs_;n++){
+        for(int m=0;m<2*ns_*n_orbs_;m++){
 
-    for(int n=0;n<2*ns_;n++){
-        for(int m=0;m<2*ns_;m++){
-
-            value_x=zero_complex;
-            value_y=zero_complex;
+            value0_x=zero_complex;
+            value0_y=zero_complex;
+            value1_x=zero_complex;
+            value1_y=zero_complex;
 
             for(int i=0;i<ns_;i++){
                 ipx = Coordinates_.neigh(i,0);
                 ipy = Coordinates_.neigh(i,2);
 
-
-
                 for(int spin=0;spin<2;spin++){
-                    value_x += ( conj(Hamiltonian_.Ham_(ipx + (ns_*spin),n))*Hamiltonian_.Ham_(i + (ns_*spin),m) )
-                            -  ( conj(Hamiltonian_.Ham_(i + (ns_*spin),n))*Hamiltonian_.Ham_(ipx + (ns_*spin),m) );
 
-                    value_y += ( conj(Hamiltonian_.Ham_(ipy + (ns_*spin),n))*Hamiltonian_.Ham_(i + (ns_*spin),m) )
-                            -  ( conj(Hamiltonian_.Ham_(i + (ns_*spin),n))*Hamiltonian_.Ham_(ipy + (ns_*spin),m) );
+                    c_0 = Coordinates_.Nc_dof(i, 0 + n_orbs_*spin);
+                    c_1 = Coordinates_.Nc_dof(i, 1 + n_orbs_*spin);
+
+                    cpx_0 = Coordinates_.Nc_dof(ipx, 0 + n_orbs_*spin);
+                    cpx_1 = Coordinates_.Nc_dof(ipx, 1 + n_orbs_*spin);
+
+                    cpy_0 = Coordinates_.Nc_dof(ipy, 0 + n_orbs_*spin);
+                    cpy_1 = Coordinates_.Nc_dof(ipy, 1 + n_orbs_*spin);
+
+
+                    value0_x += ( conj(Hamiltonian_.Ham_(cpx_0,n))*Hamiltonian_.Ham_(c_0,m) )
+                            -  ( conj(Hamiltonian_.Ham_(c_0,n))*Hamiltonian_.Ham_(cpx_0,m) );
+
+                    value0_y += ( conj(Hamiltonian_.Ham_(cpy_0,n))*Hamiltonian_.Ham_(c_0,m) )
+                            -  ( conj(Hamiltonian_.Ham_(c_0,n))*Hamiltonian_.Ham_(cpy_0,m) );
+
+                    value1_x += ( conj(Hamiltonian_.Ham_(cpx_1,n))*Hamiltonian_.Ham_(c_0,m) )
+                            -  ( conj(Hamiltonian_.Ham_(c_1,n))*Hamiltonian_.Ham_(cpx_0,m) );
+
+                    value1_y += ( conj(Hamiltonian_.Ham_(cpy_1,n))*Hamiltonian_.Ham_(c_1,m) )
+                            -  ( conj(Hamiltonian_.Ham_(c_1,n))*Hamiltonian_.Ham_(cpy_1,m) );
 
                 }
-
-
             }
+            PSI0_x[n][m] = abs(value0_x)*abs(value0_x);
+            PSI0_y[n][m] = abs(value0_y)*abs(value0_y);
 
-
-            PSI_x[n][m] = abs(value_x)*abs(value_x);
-            PSI_y[n][m] = abs(value_y)*abs(value_y);
-
-
+            PSI1_x[n][m] = abs(value1_x)*abs(value1_x);
+            PSI1_y[n][m] = abs(value1_y)*abs(value1_y);
         }
     }
 
 
 
 
-    double sigma_x, sigma_y;
+    double sigma0_x, sigma0_y, sigma1_x, sigma1_y, sigma_avg;
     double omega_val;
 
 
@@ -1336,17 +1367,29 @@ void Observables::Calculate_Optical_Conductivity(){
 
         //cout<<omega_ind<<endl;
 
-        sigma_x=0.0; sigma_y=0.0;
-        for(int n=0;n<2*ns_;n++){
-            for(int m=0;m<2*ns_;m++){
+        sigma0_x=0.0; sigma0_y=0.0;
+        sigma1_x=0.0; sigma1_y=0.0;
+
+        for(int n=0;n<2*ns_*n_orbs_;n++){
+            for(int m=0;m<2*ns_*n_orbs_;m++){
 
                 if(n!=m){
-                    sigma_x += (PSI_x[n][m])
+                    sigma0_x += (PSI0_x[n][m])
                             *((1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0)))
                             *((1.0/( exp((Parameters_.mus-Hamiltonian_.eigs_[m])*Parameters_.beta ) + 1.0)))
                             *Lorentzian( omega_min + (omega_ind*d_omega) + Hamiltonian_.eigs_[n] - Hamiltonian_.eigs_[m], eta);
 
-                    sigma_y += (PSI_y[n][m])
+                    sigma0_y += (PSI0_y[n][m])
+                            *((1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0)))
+                            *((1.0/( exp((Parameters_.mus-Hamiltonian_.eigs_[m])*Parameters_.beta ) + 1.0)))
+                            *Lorentzian( omega_min + (omega_ind*d_omega) + Hamiltonian_.eigs_[n] - Hamiltonian_.eigs_[m], eta);
+
+                    sigma1_x += (PSI1_x[n][m])
+                            *((1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0)))
+                            *((1.0/( exp((Parameters_.mus-Hamiltonian_.eigs_[m])*Parameters_.beta ) + 1.0)))
+                            *Lorentzian( omega_min + (omega_ind*d_omega) + Hamiltonian_.eigs_[n] - Hamiltonian_.eigs_[m], eta);
+
+                    sigma1_y += (PSI1_y[n][m])
                             *((1.0/( exp((Hamiltonian_.eigs_[n]-Parameters_.mus)*Parameters_.beta ) + 1.0)))
                             *((1.0/( exp((Parameters_.mus-Hamiltonian_.eigs_[m])*Parameters_.beta ) + 1.0)))
                             *Lorentzian( omega_min + (omega_ind*d_omega) + Hamiltonian_.eigs_[n] - Hamiltonian_.eigs_[m], eta);
@@ -1356,16 +1399,20 @@ void Observables::Calculate_Optical_Conductivity(){
             }
         }
 
-        sigma_x = sigma_x*PI*(1.0 - exp(-1.0*Parameters_.beta*(omega_val)))*(1.0/(omega_val*ns_));
-        sigma_y = sigma_y*PI*(1.0 - exp(-1.0*Parameters_.beta*(omega_val)))*(1.0/(omega_val*ns_));
+        sigma0_x = sigma0_x*PI*(1.0 - exp(-1.0*Parameters_.beta*(omega_val)))*(1.0/(omega_val*ns_));
+        sigma0_y = sigma0_y*PI*(1.0 - exp(-1.0*Parameters_.beta*(omega_val)))*(1.0/(omega_val*ns_));
+        sigma1_x = sigma1_x*PI*(1.0 - exp(-1.0*Parameters_.beta*(omega_val)))*(1.0/(omega_val*ns_));
+        sigma1_y = sigma1_y*PI*(1.0 - exp(-1.0*Parameters_.beta*(omega_val)))*(1.0/(omega_val*ns_));
 
-        file_sigma_w_out<<omega_val<<"     "<<sigma_x<<"     "<<sigma_y<<endl;
+        sigma_avg = (1.0/4.0)*(sigma0_x+sigma1_x+sigma0_y+sigma1_y);
+
+        file_sigma_w_out<<omega_val<<"     "<<sigma0_x<<"     "<<sigma0_y<<"     "<<sigma1_x<<"     "<<sigma1_y<<"     "<<sigma_avg<<endl;
 
     }
 
 
 
-*/
+
 }
 
 void Observables::Calculate_Single_Particle_Density_Matrix(){
