@@ -769,6 +769,9 @@ void Observables::Update_OrderParameters_Modified_Broyden_in_ComplexSpace(int it
 void Observables::Calculate_IPR(){
 
 
+    string fileout_IPR="IPR_all_states.txt";
+    ofstream file_IPR_out(fileout_IPR.c_str());
+
     double IPR_0, IPR_1;
     int c0, c1, site;
     double eta = 0.001;
@@ -798,6 +801,37 @@ void Observables::Calculate_IPR(){
 
     cout<<"IPR for state no. "<<n_chosen<<" = "<<IPR_0<<",   "<< IPR_1<<",   "<<IPR_0+IPR_1<<endl;
 
+
+
+    //*************IPR for all states*************************************
+
+    file_IPR_out<<"# state_no  IPR_orb0   IPR_orb1  IPR"<<endl;
+    file_IPR_out<<"# Fermi state = "<<(Parameters_.Total_Particles) - 1<<endl;
+    for(int state_no=0;state_no<2*n_orbs_*ns_;state_no++){
+        IPR_0=0.0; IPR_1=0.0;
+        for(int i=0;i<lx_;i++){
+            for(int j=0;j<ly_;j++){
+                site=Coordinates_.Nc(i,j);
+
+                for(int spin=0;spin<2;spin++){
+                    c0=Coordinates_.Nc_dof(site, 0 + n_orbs_*spin);
+                    c1=Coordinates_.Nc_dof(site, 1 + n_orbs_*spin);
+                    //  IPR += abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
+                    //         abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n))*
+                    //         Lorentzian( Parameters_.mus - Hamiltonian_.eigs_[n], eta);
+
+                    IPR_1 += abs(Hamiltonian_.Ham_(c1,state_no))*abs(Hamiltonian_.Ham_(c1,state_no))*
+                            abs(Hamiltonian_.Ham_(c1,state_no))*abs(Hamiltonian_.Ham_(c1,state_no));
+                    IPR_0 += abs(Hamiltonian_.Ham_(c0,state_no))*abs(Hamiltonian_.Ham_(c0,state_no))*
+                            abs(Hamiltonian_.Ham_(c0,state_no))*abs(Hamiltonian_.Ham_(c0,state_no));
+
+                }
+            }
+        }
+
+        file_IPR_out<<state_no<<"   "<<IPR_0<<"   "<< IPR_1<<"   "<<IPR_0+IPR_1<<endl;
+    }
+    //********************************************************************
 
 
     IPR_0=0.0;IPR_1=0.0;
@@ -875,8 +909,8 @@ void Observables::Calculate_IPR(){
 
                 for(int n=0;n<Hamiltonian_.Ham_.n_row();n++){
                     value += ( (abs(Hamiltonian_.Ham_(c1,n))*abs(Hamiltonian_.Ham_(c1,n)))
-                              +
-                              (abs(Hamiltonian_.Ham_(c0,n))*abs(Hamiltonian_.Ham_(c0,n))))*
+                               +
+                               (abs(Hamiltonian_.Ham_(c0,n))*abs(Hamiltonian_.Ham_(c0,n))))*
                             Lorentzian(Parameters_.mus - Hamiltonian_.eigs_[n], eta);;
                 }
             }
@@ -1283,7 +1317,9 @@ void Observables::Calculate_Optical_Conductivity(){
     //--------------------------------------------------//
     double omega_min, omega_max, d_omega;
     double eta = 0.05;
-    omega_min=0.00001;omega_max=Hamiltonian_.eigs_[2*n_orbs_*ns_ - 1] - Hamiltonian_.eigs_[0] + 1.0;d_omega=0.01;
+    omega_min=0.00001;
+    omega_max=6.0;//Hamiltonian_.eigs_[2*n_orbs_*ns_ - 1] - Hamiltonian_.eigs_[0] + 1.0;
+    d_omega=0.01;
     //---------------------------------------------------//
 
 
@@ -1335,8 +1371,8 @@ void Observables::Calculate_Optical_Conductivity(){
                     value0_y += ( conj(Hamiltonian_.Ham_(cpy_0,n))*Hamiltonian_.Ham_(c_0,m) )
                             -  ( conj(Hamiltonian_.Ham_(c_0,n))*Hamiltonian_.Ham_(cpy_0,m) );
 
-                    value1_x += ( conj(Hamiltonian_.Ham_(cpx_1,n))*Hamiltonian_.Ham_(c_0,m) )
-                            -  ( conj(Hamiltonian_.Ham_(c_1,n))*Hamiltonian_.Ham_(cpx_0,m) );
+                    value1_x += ( conj(Hamiltonian_.Ham_(cpx_1,n))*Hamiltonian_.Ham_(c_1,m) )
+                            -  ( conj(Hamiltonian_.Ham_(c_1,n))*Hamiltonian_.Ham_(cpx_1,m) );
 
                     value1_y += ( conj(Hamiltonian_.Ham_(cpy_1,n))*Hamiltonian_.Ham_(c_1,m) )
                             -  ( conj(Hamiltonian_.Ham_(c_1,n))*Hamiltonian_.Ham_(cpy_1,m) );
@@ -1608,10 +1644,10 @@ void Observables::Calculate_two_point_correlations(){
                 qx_=Coordinates_.indx(q_);
                 qy_=Coordinates_.indy(q_);
                 Sq[q_] += exp(iota_complex*(  ((2.0*qx_*PI_*(jx-ix))/(lx_))  +  ((2.0*qy_*PI_*(jy-iy))/(ly_))  ))*
-                           (temp_val_SS);
+                        (temp_val_SS);
 
                 Lq[q_] += exp(iota_complex*(  ((2.0*qx_*PI_*(jx-ix))/(lx_))  +  ((2.0*qy_*PI_*(jy-iy))/(ly_))  ))*
-                           (temp_val_LL);
+                        (temp_val_LL);
 
             }
 
@@ -1621,11 +1657,11 @@ void Observables::Calculate_two_point_correlations(){
     int q;
     for(int qy=0;qy<ly_;qy++){
         for(int qx=0;qx<lx_;qx++){
-          q=Coordinates_.Nc(qx,qy);
-    file_Structure_factors_out<<q<<"    "<<qx<<"     "<<qy<<"      "<<(Sq[q]*(1.0/(ns_*ns_))).real()<<"     "<<(Lq[q]*(1.0/(ns_*ns_))).real()<<"     "
-                             <<(Sq[q]*(1.0/(ns_*ns_))).imag()<<"     "<<(Lq[q]*(1.0/(ns_*ns_))).imag()<<endl;
-    }
-     file_Structure_factors_out<<endl;
+            q=Coordinates_.Nc(qx,qy);
+            file_Structure_factors_out<<q<<"    "<<qx<<"     "<<qy<<"      "<<(Sq[q]*(1.0/(ns_*ns_))).real()<<"     "<<(Lq[q]*(1.0/(ns_*ns_))).real()<<"     "
+                                     <<(Sq[q]*(1.0/(ns_*ns_))).imag()<<"     "<<(Lq[q]*(1.0/(ns_*ns_))).imag()<<endl;
+        }
+        file_Structure_factors_out<<endl;
     }
 
 

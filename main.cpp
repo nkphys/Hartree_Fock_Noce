@@ -83,15 +83,15 @@ int main(int argc, char *argv[]) {
         cout<<setprecision(9);
         SelfConsistencyEngine SelfConsistencyEngine_(Parameters_,Coordinates_,MFParams_,Hamiltonian_,Observables_);
         SelfConsistencyEngine_.RUN_SelfConsistencyEngine();
-        Observables_.Calculate_Local_n_orb_resolved();
-        Observables_.Calculate_Nw();
+        //Observables_.Calculate_Local_n_orb_resolved();
+        //Observables_.Calculate_Nw();
 
-        Observables_.Calculate_Single_Particle_Density_Matrix();
-        Observables_.Calculate_two_point_correlations();
+        //Observables_.Calculate_Single_Particle_Density_Matrix();
+        //Observables_.Calculate_two_point_correlations();
 
         // Observables_.Calculate_Akw();
         Observables_.Calculate_IPR();
-        Observables_.Calculate_Optical_Conductivity();
+        //Observables_.Calculate_Optical_Conductivity();
 
 
 

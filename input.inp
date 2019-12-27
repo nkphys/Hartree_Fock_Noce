@@ -1,19 +1,19 @@
 PBC=true
-Xsite=16
-Ysite=16
+Xsite=24
+Ysite=24
 n_orbs=2
 TwistedBoundaryCond_mx=0
 TwistedBoundaryCond_my=0
 TBC_cellsX=32
 TBC_cellsY=32
-Total No. of particles=768
+Total No. of particles=288
 RandomSeed=20
 Nearest_Neigh_Hopping_matrix=1.0 0.0 0.0 1.0 
 
 Crystal_Field=0.0 0.0
 
 RandomDisorderSeed=40
-Disorder_Strength=3.0
+Disorder_Strength=2.0
 
 Simple_Mixing=1
 Broyden_Mixing=0
@@ -29,7 +29,7 @@ J_HUND=0.0
 U_Onsite=0.0
 U_prime_Onsite=0.0
 
-No_of_SelfConsistency_iters=200000
+No_of_SelfConsistency_iters=1
 Convergence_Error=0.00001
 Read_initial_OPvalues=0
 Read_initial_OPvalues_file=Order_FM.txt

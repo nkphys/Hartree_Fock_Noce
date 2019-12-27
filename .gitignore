@@ -3,3 +3,10 @@ Hartree_Fock_2_orb_Noce.creator
 Hartree_Fock_2_orb_Noce.creator.user
 Hartree_Fock_2_orb_Noce.files
 Hartree_Fock_2_orb_Noce.includes
+Hartree_Fock_Noce.config
+Hartree_Fock_Noce.creator
+Hartree_Fock_Noce.creator.user
+Hartree_Fock_Noce.files
+Hartree_Fock_Noce.includes
+SelfConsistent
+main.o
